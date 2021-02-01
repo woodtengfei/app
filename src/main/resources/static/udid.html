@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<head>
+    <title>UDID助手</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script type="text/javascript">
+        function showPage () {
+            var index = location.href.indexOf('?');
+            if (index !== -1) {
+              var array = location.href.substr(index + 1).split('&');
+              var deviceInfo = {};
+              array.forEach(function (value) {
+                var arr = value.split('=');
+                if (arr.length === 2) {
+                  deviceInfo[arr[0]] = decodeURIComponent(arr[1].trim());
+                }
+              })
+              document.getElementById('IMEI').innerText = deviceInfo["IMEI"];
+              document.getElementById('PRODUCT').innerText = deviceInfo["PRODUCT"];
+              document.getElementById('UDID').innerText = deviceInfo["UDID"];
+              document.getElementById('VERSION').innerText = deviceInfo["VERSION"];
+            }
+        }
+    </script>
+</head>
+<body onload="showPage()">
+    <p>IMEI：<span id="IMEI"></span></p>
+    <p>PRODUCT：<span id="PRODUCT"></span></p>
+    <p>UDID：<span id="UDID"></span></p>
+    <p>VERSION：<span id="VERSION"></span></p>
+</body>
+</html>
