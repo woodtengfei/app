@@ -1,9 +1,92 @@
 <!DOCTYPE html>
+<html lang="zh-CN">
 <head>
     <title>UDID助手</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style type="text/css">
+        /* The snackbar - position it at the bottom and in the middle of the screen */
+        #snackbar {
+            visibility: hidden; /* Hidden by default. Visible on click */
+            min-width: 250px; /* Set a default minimum width */
+            margin-left: -125px; /* Divide value of min-width by 2 */
+            background-color: #333; /* Black background color */
+            color: #fff; /* White text color */
+            text-align: center; /* Centered text */
+            border-radius: 2px; /* Rounded borders */
+            padding: 16px; /* Padding */
+            position: fixed; /* Sit on top of the screen */
+            z-index: 1; /* Add a z-index if needed */
+            left: 50%; /* Center the snackbar */
+            bottom: 30px; /* 30px from the bottom */
+        }
+
+        /* Show the snackbar when clicking on a button (class added with JavaScript) */
+        #snackbar.show {
+            visibility: visible; /* Show the snackbar */
+            /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+            However, delay the fade out process for 2.5 seconds */
+            -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        /* Animations to fade the snackbar in and out */
+        @-webkit-keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @-webkit-keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+    </style>
+    <style type="text/css">
+        body {
+            text-align: center;
+        }
+        .container {
+            text-align: left;
+            margin: 50px 10% 40px 10%;
+            padding: 20px 0 20px 20px;
+            background-color: #f6f6f6;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: medium;
+        }
+        .email-container p {
+            font-size: small;
+            color: #666666;
+        }
+        .email {
+            width: 66%;
+            height: 40px;
+            border-radius: 10px;
+            padding: 0 10px;
+            border-color: #dddddd;
+            border-width: 1px;
+        }
+        .button {
+            color: white;
+            font-size: medium;
+            width: 100px;
+            height: 40px;
+            border-radius: 20px;
+            background-color: #28caad;
+            margin-top: 20px;
+        }
+    </style>
     <script type="text/javascript">
         function showPage () {
             var index = location.href.indexOf('?');
@@ -16,18 +99,76 @@
                   deviceInfo[arr[0]] = decodeURIComponent(arr[1].trim());
                 }
               })
+              window.deviceInfo = deviceInfo;
               document.getElementById('IMEI').innerText = deviceInfo["IMEI"];
               document.getElementById('PRODUCT').innerText = deviceInfo["PRODUCT"];
               document.getElementById('UDID').innerText = deviceInfo["UDID"];
               document.getElementById('VERSION').innerText = deviceInfo["VERSION"];
             }
         }
+        function validateEmail(email) {
+            const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(String(email).toLowerCase());
+        }
+        function submit () {
+            var email = document.getElementsByClassName("email")[0].value || "";
+            if (!validateEmail(email)) {
+                showSnackbar("请输入有效的邮箱");
+                return
+            }
+            var submitBtn = document.getElementsByClassName("button")[0];
+            submitBtn.disabled = true;
+            submitBtn.innerText = "发送中...";
+            var httpRequest = new XMLHttpRequest();
+            var url = location.origin + location.pathname.replace("udid.html", "") + "email";
+            httpRequest.open('POST', url, true);
+            httpRequest.setRequestHeader("Content-type","application/json");
+            var obj = window.deviceInfo;
+            obj.email = email.trim();
+            httpRequest.send(JSON.stringify(obj));
+            httpRequest.onreadystatechange = function () {
+                if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                    var result = JSON.parse(httpRequest.responseText);
+                    console.log(result);
+                    showSnackbar(result["msg"]);
+                    if (result.code === 0) { // 成功
+
+                    } else {
+                        showSnackbar(result["msg"]);
+                    }
+                } else {
+                    showSnackbar("Error(" + httpRequest.status + ") Please try again later");
+                }
+                submitBtn.innerText = "Submit";
+                submitBtn.disabled = false;
+            };
+        }
+
+        function showSnackbar(msg) {
+            // Get the snackbar DIV
+            var x = document.getElementById("snackbar");
+            // Add the "show" class to DIV
+            x.className = "show";
+            x.innerText = msg;
+            // After 3 seconds, remove the show class from DIV
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
     </script>
 </head>
 <body onload="showPage()">
-    <p>IMEI：<span id="IMEI"></span></p>
-    <p>PRODUCT：<span id="PRODUCT"></span></p>
-    <p>UDID：<span id="UDID"></span></p>
-    <p>VERSION：<span id="VERSION"></span></p>
+    <div class="container">
+        <p>IMEI：<span id="IMEI"></span></p>
+        <p>PRODUCT：<span id="PRODUCT"></span></p>
+        <p>UDID：<span id="UDID"></span></p>
+        <p>VERSION：<span id="VERSION"></span></p>
+    </div>
+    <div class="email-container">
+        <p>发送UDID至指定邮箱</p>
+        <input class="email" type="email" max="30" placeholder="请输入邮箱">
+        <br/>
+        <button class="button" type="submit" onclick="submit()">Submit</button>
+    </div>
+    <!-- The actual snackbar -->
+    <div id="snackbar">请输入有效的邮箱</div>
 </body>
 </html>

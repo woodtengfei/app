@@ -1,7 +1,7 @@
 package com.wood.app.controller;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -10,7 +10,7 @@ import org.springframework.web.servlet.ModelAndView;
  * @Date 2020-12-09
  */
 
-@Controller
+@RestController
 public class HelloController {
 
     @RequestMapping("/hello")
